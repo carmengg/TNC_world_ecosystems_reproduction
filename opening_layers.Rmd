@@ -1,0 +1,83 @@
+---
+title: "opening_layers"
+output: html_document
+---
+
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+library(raster) ### NOTE: attach this BEFORE tidyverse
+library(rgdal)
+library(tidyverse)
+library(here)
+library(sf) # simple features package (for shapefiles)
+```
+
+
+
+# World_ELU_2015.tif
+
+ELU = ecological land units
+
+https://www.arcgis.com/home/item.html?id=77bbcb86d5eb48a8adb084d499c1f7ef
+
+```{r}
+GDALinfo(here("World_ELU_2015.tif"))
+
+world_elu <- raster(here("World_ELU_2015.tif"))
+plot(world_elu)
+```
+
+
+https://onlinelibrary.wiley.com/doi/10.1111/tgis.12265
+
+```{r}
+# ----- Wolrd Landform rasters
+GDALinfo(here("GlobalMountainsK3Classes",
+              "k3classes.tif"))
+k3_mountains <- raster(here("GlobalMountainsK3Classes",
+              "k3classes.tif"))
+unique(k3_mountains)
+```
+
+
+```{r}
+# ---- SB county and CA shapefiles
+sb_shp <- readOGR(here("sb-county-boundary",
+                       "data",
+                       "commondata",
+                       "county_boundaries",
+                       "SB_only.shp")) 
+sb_shp <- spTransform(sb_shp,crs(world_elu))
+
+
+ca_shp <- readOGR(here("ca-state-boundary",
+                       "CA_State_TIGER2016.shp"))
+ca_shp <- spTransform(ca_shp, crs(world_elu))
+```
+
+
+```{r}
+# ----- SB county map
+sb_landform_box <- crop(x = k3_mountains, y = st_bbox(sb_shp))
+plot(sb_landform_box)
+unique(sb_landform_box)
+```
+
+
+```{r}
+# ---- CA map
+ca_landform_box <- crop(x= k3_mountains, y=st_bbox(ca_shp))
+#plot(ca_landform_box)
+#unique(ca_landform_box)
+
+ca_landform <- mask(ca_landform_box,ca_shp)
+rm(ecosystems)
+rm(ca_landform_box)
+#rm(sb_shp)
+
+plot(ca_landform)
+
+writeRaster(ca_landform, "ca_landforms.tif")
+```
+
