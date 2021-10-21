@@ -184,15 +184,17 @@ ca_land_cover <- raster(here("ca_subsets","ca_land_cover_2008.tif"))
 
 
 thresh<- cbind( c(1:9)*10, c(2:10)*10, c(1:9)) 
+thresh[1,1] <-12
 
 ca_lc_regions <- ca_land_cover
 ca_lc_regions[ca_lc_regions == 11] <- 10
 
 ca_water_10 <- ca_lc_regions
 
-ca_lc_regions <- reclassify(ca_lc_regions,thresh, right=NA)
+ca_lc_regions <- reclassify(ca_water_10,thresh, right=FALSE)
 unique(ca_lc_regions)
 plot(ca_lc_regions)
+writeRaster(ca_lc_regions, filename=here("ca_subsets","ca_landcover_regions.tif")  )
 ```
 
 ```{r}
