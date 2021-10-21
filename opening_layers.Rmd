@@ -19,7 +19,11 @@ library(sf) # simple features package (for shapefiles)
 
 ELU = ecological land units
 
+https://www.esri.com/~/media/Files/Pdfs/library/whitepapers/pdfs/introducing-the-global-elu.pdf
+
 https://www.arcgis.com/home/item.html?id=77bbcb86d5eb48a8adb084d499c1f7ef
+
+https://www.esri.com/about/newsroom/insider/updated-map-features-global-ecology-in-unprecedented-detail/
 
 ```{r}
 GDALinfo(here("World_ELU_2015.tif"))
@@ -79,7 +83,7 @@ rm(ca_landform_box)
 
 plot(ca_landform)
 
-writeRaster(ca_landform, "ca_landforms.tif")
+#writeRaster(ca_landform, filename=here("ca_subsets","ca_landforms2.tif")  )
 ```
 
 ---------------------------------------------------------------------------------------
@@ -89,13 +93,44 @@ writeRaster(ca_landform, "ca_landforms.tif")
 
 https://cgiarcsi.community/2019/01/24/global-aridity-index-and-potential-evapotranspiration-climate-database-v2/
 
+https://figshare.com/articles/dataset/Global_Aridity_Index_and_Potential_Evapotranspiration_ET0_Climate_Database_v2/7504448/3
+
 
 ```{r}
-# ----- Wolrd Landform rasters
-GDALinfo(here("GlobalMountainsK3Classes",
-              "k3classes.tif"))
-k3_mountains <- raster(here("GlobalMountainsK3Classes",
-              "k3classes.tif"))
-unique(k3_mountains)
+# ----- Aridity Index
+GDALinfo(here("raw_data",
+              "AridityIndex",
+              "ai_et0",
+              "ai_et0.tif"))
+
+aridity_index <- raster(here("raw_data",
+              "AridityIndex",
+              "ai_et0",
+              "ai_et0.tif"))
+
+# two-step cropping
+ca_aridity_index <- mask(crop(x= aridity_index, y=st_bbox(ca_shp)),
+                         ca_shp)
+plot(ca_aridity_index)
+writeRaster(ca_landform, filename=here("ca_subsets","ca_aridity_index.tif")  )
+```
+```{r}
+# reclassify values into three groups: 
+# 1 = desert => AI < 0.05
+# 2 = dry => 0.05 <= AI <= 0.65
+# 3 = moist => 0.65 < AI
+# https://www.rdocumentation.org/packages/raster/versions/3.5-2/topics/reclassify
+# min, max, new_value
+m <- c(0, 500 , 1,  
+       500, 6500, 2,  
+       6500, 23000, 3)
+thresh <- matrix(m, ncol=3, byrow=TRUE)
+
+#rm(m)
+#rm(thresh)
+
+ca_aridity_regions <- reclassify(ca_aridity_index,thresh)
+plot(ca_aridity_regions)
+writeRaster(ca_landform, filename=here("ca_subsets","ca_aridity_regions.tif")  )
 ```
 
