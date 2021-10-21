@@ -13,7 +13,7 @@ library(here)
 library(sf) # simple features package (for shapefiles)
 ```
 
-
+---------------------------------------------------------------------------------------
 
 # World_ELU_2015.tif
 
@@ -28,6 +28,7 @@ world_elu <- raster(here("World_ELU_2015.tif"))
 plot(world_elu)
 ```
 
+---------------------------------------------------------------------------------------
 
 https://onlinelibrary.wiley.com/doi/10.1111/tgis.12265
 
@@ -79,5 +80,22 @@ rm(ca_landform_box)
 plot(ca_landform)
 
 writeRaster(ca_landform, "ca_landforms.tif")
+```
+
+---------------------------------------------------------------------------------------
+
+
+# World Moisture Domains (aridity index)
+
+https://cgiarcsi.community/2019/01/24/global-aridity-index-and-potential-evapotranspiration-climate-database-v2/
+
+
+```{r}
+# ----- Wolrd Landform rasters
+GDALinfo(here("GlobalMountainsK3Classes",
+              "k3classes.tif"))
+k3_mountains <- raster(here("GlobalMountainsK3Classes",
+              "k3classes.tif"))
+unique(k3_mountains)
 ```
 
