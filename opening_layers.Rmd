@@ -145,6 +145,8 @@ writeRaster(ca_landform, filename=here("ca_subsets","ca_aridity_regions.tif")  )
 
 https://www.mrlc.gov/data?f%5B0%5D=year%3A2008
 
+Legends:
+https://www.mrlc.gov/data/legends/national-land-cover-database-2019-nlcd2019-legend
 
 
 ```{r}
@@ -160,14 +162,58 @@ land_cover <- raster(here("raw_data",
 ca_shp <- spTransform(ca_shp, crs(land_cover))
 
 # two-step cropping
-
 # takes a while to mask
 ca_land_cover <- mask(crop(x= land_cover, y=st_bbox(ca_shp)),ca_shp)
 plot(ca_land_cover)
 #writeRaster(ca_land_cover, filename=here("ca_subsets","ca_land_cover_2008.tif")  )
+ca_land_cover <- raster(here("ca_subsets","ca_land_cover_2008.tif"))
 ```
 
 
+```{r}
+# 11 : open water
+# 12 : perennial ice/snow
+# 21-24 : developed
+# 31 : barren
+# 41-43 : forest
+# 51,52 : shrubland
+# 71-74 : grassland
+# 81,82: cropland
+# 90,95: wetland
+  
 
 
+thresh<- cbind( c(1:9)*10, c(2:10)*10, c(1:9)) 
+
+ca_lc_regions <- ca_land_cover
+ca_lc_regions[ca_lc_regions == 11] <- 10
+
+ca_water_10 <- ca_lc_regions
+
+ca_lc_regions <- reclassify(ca_lc_regions,thresh, right=NA)
+unique(ca_lc_regions)
+plot(ca_lc_regions)
+```
+
+```{r}
+forest <- mask(ca_lc_regions, ca_lc_regions == 4, maskvalue=F)
+plot(forest)
+```
+
+
+```{r}
+# Experiments to figure out reclassify
+
+m<- matrix(c(0,0,0,
+  10,11,20), nrow=3)
+r <- raster(m)
+
+new_r <- reclassify(r, thresh, right=NA) #a<- raster <=b
+newer_r <-reclassify(r, thresh) #a< raster <= b
+newer2 <- reclassify(r, thresh, right=FALSE) # a<= raster <b
+plot(r)
+plot(new_r)
+plot(newer_r)
+plot(newer2)
+```
 
