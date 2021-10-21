@@ -26,7 +26,7 @@ https://www.arcgis.com/home/item.html?id=77bbcb86d5eb48a8adb084d499c1f7ef
 https://www.esri.com/about/newsroom/insider/updated-map-features-global-ecology-in-unprecedented-detail/
 
 ```{r}
-GDALinfo(here("World_ELU_2015.tif"))
+GDALinfo(here("raw_data","World_ELU_2015.tif"))
 
 world_elu <- raster(here("World_ELU_2015.tif"))
 plot(world_elu)
@@ -48,7 +48,8 @@ unique(k3_mountains)
 
 ```{r}
 # ---- SB county and CA shapefiles
-sb_shp <- readOGR(here("sb-county-boundary",
+sb_shp <- readOGR(here("shapefiles",
+                       "sb-county-boundary",
                        "data",
                        "commondata",
                        "county_boundaries",
@@ -56,7 +57,8 @@ sb_shp <- readOGR(here("sb-county-boundary",
 sb_shp <- spTransform(sb_shp,crs(world_elu))
 
 
-ca_shp <- readOGR(here("ca-state-boundary",
+ca_shp <- readOGR(here("shapefiles",
+                       "ca-state-boundary",
                        "CA_State_TIGER2016.shp"))
 ca_shp <- spTransform(ca_shp, crs(world_elu))
 ```
@@ -114,6 +116,8 @@ ca_aridity_index <- mask(crop(x= aridity_index, y=st_bbox(ca_shp)),
 plot(ca_aridity_index)
 writeRaster(ca_landform, filename=here("ca_subsets","ca_aridity_index.tif")  )
 ```
+
+
 ```{r}
 # reclassify values into three groups: 
 # 1 = desert => AI < 0.05
@@ -126,11 +130,44 @@ m <- c(0, 500 , 1,
        6500, 23000, 3)
 thresh <- matrix(m, ncol=3, byrow=TRUE)
 
-#rm(m)
-#rm(thresh)
 
 ca_aridity_regions <- reclassify(ca_aridity_index,thresh)
+rm(m)
+rm(thresh)
+
 plot(ca_aridity_regions)
 writeRaster(ca_landform, filename=here("ca_subsets","ca_aridity_regions.tif")  )
 ```
+
+---------------------------------------------------------------------------------------
+
+# Landcover
+
+https://www.mrlc.gov/data?f%5B0%5D=year%3A2008
+
+
+
+```{r}
+# ----- Land Cover
+GDALinfo(here("raw_data",
+              "nlcd_2008_land_cover_l48_20210604",
+              "nlcd_2008_land_cover_l48_20210604.img"))
+
+land_cover <- raster(here("raw_data",
+              "nlcd_2008_land_cover_l48_20210604",
+              "nlcd_2008_land_cover_l48_20210604.img"))
+
+ca_shp <- spTransform(ca_shp, crs(land_cover))
+
+# two-step cropping
+
+# takes a while to mask
+ca_land_cover <- mask(crop(x= land_cover, y=st_bbox(ca_shp)),ca_shp)
+plot(ca_land_cover)
+#writeRaster(ca_land_cover, filename=here("ca_subsets","ca_land_cover_2008.tif")  )
+```
+
+
+
+
 
