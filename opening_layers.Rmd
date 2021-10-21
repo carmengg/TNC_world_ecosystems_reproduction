@@ -38,7 +38,8 @@ https://onlinelibrary.wiley.com/doi/10.1111/tgis.12265
 
 ```{r}
 # ----- Wolrd Landform rasters
-GDALinfo(here("GlobalMountainsK3Classes",
+GDALinfo(here("raw_data",
+              "GlobalMountainsK3Classes",
               "k3classes.tif"))
 k3_mountains <- raster(here("GlobalMountainsK3Classes",
               "k3classes.tif"))
@@ -194,7 +195,7 @@ ca_water_10 <- ca_lc_regions
 ca_lc_regions <- reclassify(ca_water_10,thresh, right=FALSE)
 unique(ca_lc_regions)
 plot(ca_lc_regions)
-writeRaster(ca_lc_regions, filename=here("ca_subsets","ca_landcover_regions.tif")  )
+#writeRaster(ca_lc_regions, filename=here("ca_subsets","ca_landcover_regions.tif")  )
 ```
 
 ```{r}
@@ -217,5 +218,39 @@ plot(r)
 plot(new_r)
 plot(newer_r)
 plot(newer2)
+```
+---------------------------------------------------------------------------------------
+
+# WorldClim data
+
+https://www.worldclim.org/data/worldclim21.html
+
+```{r}
+
+GDALinfo(here("raw_data",
+              "wc2",
+              "wc2.1_30s_tavg_01.tif"))
+wc2_1 <- raster(here("raw_data",
+              "wc2",
+              "wc2.1_30s_tavg_01.tif"))
+plot(wc2_1)
+ca_shp <- spTransform(ca_shp, crs(wc2_1))
+```
+
+
+```{r}
+# cliping and writing rasters
+# for(i in c(1:12)){
+#   file <- paste("wc2.1_30s_tavg_",i,".tif", sep="")
+#   weather <- raster(here("raw_data",
+#               "wc2",
+#               file))
+#   
+#   ca_weather <- mask(crop(x= weather, y=st_bbox(ca_shp)),ca_shp)
+#   file <- paste("ca_avg_temp_",i,".tif",sep="")
+#   writeRaster(ca_weather, filename=here("ca_subsets","avg_temp",file)  )
+# }
+# rm(weather)
+
 ```
 
