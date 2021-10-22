@@ -211,7 +211,7 @@ m<- matrix(c(0,0,0,
   10,11,20), nrow=3)
 r <- raster(m)
 
-new_r <- reclassify(r, thresh, right=NA) #a<- raster <=b
+new_r <- reclassify(r, thresh, right=NA) #a< raster <=b
 newer_r <-reclassify(r, thresh) #a< raster <= b
 newer2 <- reclassify(r, thresh, right=FALSE) # a<= raster <b
 plot(r)
@@ -271,20 +271,44 @@ plot(months_weather)
 #avg across 1970 -2000
 avg_temp <- mean(months_weather)
 plot(avg_temp)
-write(avg_temp, filename=here("ca_subsets","avg_temp","ca_30yr_avg_temp.tif"))
+writeRaster(avg_temp, filename=here("ca_subsets","avg_temp","ca_30yr_avg_temp.tif"))
 ```
 
 ```{r}
-# <0: polar or boreal
-# 0 - 10 
-thresh<- cbind( c(1:9)*10, c(2:10)*10, c(10:9)) 
-thresh[1,1] <-12
+# -inf, 0) and every month avg<10: polar
+# -inf, 0): boreal
+#  [0,10) : cold temperate
+#  [10,18) : warm temperate
+#  [18,24) : subtropical
+#  [24,34) : tropical
 
-ca_lc_regions <- ca_land_cover
-ca_lc_regions[ca_lc_regions == 11] <- 10
 
-ca_water_10 <- ca_lc_regions
+thresh<- matrix( c(-Inf, 0, 1, # this will be splot into polar (1) and boreal (2)
+                  0, 10 , 3,
+                  10,18 , 4,
+                  18,24 , 5,
+                  24,43 , 6),
+                 nrow=5,
+                 byrow=TRUE) 
 
-ca_lc_regions <- reclassify(ca_water_10,thresh, right=FALSE)
+temp_regions <- reclassify(avg_temp,thresh, right=FALSE) # a<= raster <b
+writeRaster(temp_regions, filename=here("ca_subsets","avg_temp","ca_30yr_temp_regions.tif"))
+```
+
+```{r}
+# separate polar and boreal
+polar_boreal <- temp_regions
+polar_boreal[polar_boreal!=1] <- NA
+
+months_polar = polar_boreal*months_weather
+
+# quick scan to see if there are any polar regions
+k = 0
+for (i in 1:12){
+  if(maxValue(months_polar[[i]]  # in each month these are the points with avg temp <10
+}
+
+minValue(months_polar[[4]])
+
 ```
 
